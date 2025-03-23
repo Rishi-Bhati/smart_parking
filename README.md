@@ -24,6 +24,11 @@ A modern parking management solution built with React and Node.js that helps tra
   - Track revenue
   - Monitor space utilization
 
+## ER Diagram
+
+![image](https://github.com/user-attachments/assets/db4f947b-650c-49ef-8ae6-8de205a9915c)
+
+
 ## Tech Stack
 
 - Frontend: React
