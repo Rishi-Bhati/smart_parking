@@ -9,7 +9,7 @@ lerna-debug.log*
 
 server/node_modules
 server/package-lock.json
-server/.env
+server/parking.db
 
 node_modules
 dist
