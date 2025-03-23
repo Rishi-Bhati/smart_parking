@@ -1,0 +1,45 @@
+@startuml Parking Database Schema
+
+' Entity definitions
+entity "vehicles" {
+  *id: INTEGER <<PK>>
+  --
+  *plate: TEXT <<UNIQUE>>
+  *type: TEXT
+}
+
+entity "checkins" {
+  *id: INTEGER <<PK>>
+  --
+  *vehicle_id: INTEGER <<FK>>
+  *checkin_time: DATETIME
+}
+
+entity "checkouts" {
+  *id: INTEGER <<PK>>
+  --
+  *vehicle_id: INTEGER <<FK>>
+  *checkin_id: INTEGER <<FK>>
+  *checkout_time: DATETIME
+  *fee: REAL
+}
+
+entity "violations" {
+  *id: INTEGER <<PK>>
+  --
+  *vehicle_id: INTEGER <<FK>>
+  *violation_type: TEXT
+  *violation_time: DATETIME
+  *fine_amount: REAL
+  *paid: BOOLEAN
+  payment_time: DATETIME
+  description: TEXT
+}
+
+' Relationships
+vehicles ||--o{ checkins : has
+vehicles ||--o{ checkouts : has
+vehicles ||--o{ violations : has
+checkins ||--o| checkouts : records
+
+@enduml
