@@ -83,21 +83,6 @@ npm run server
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:3000
 
-## Project Structure
-
-```
-smart_parking/
-├── src/                  # Frontend source files
-│   ├── components/       # React components
-│   ├── hooks/           # Custom React hooks
-│   ├── utils/           # Utility functions
-│   └── App.jsx          # Main application component
-├── server/              # Backend files
-│   ├── db.js           # Database configuration
-│   └── index.js        # Express server setup
-├── public/             # Static files
-└── package.json        # Project dependencies
-```
 
 ## API Endpoints
 
