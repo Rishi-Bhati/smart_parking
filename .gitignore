@@ -7,6 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+server/node_modules
+server/package-lock.json
+server/.env
+
 node_modules
 dist
 dist-ssr
@@ -23,7 +27,3 @@ package-lock.json
 *.njsproj
 *.sln
 *.sw?
-
-server/parking.db
-server/node_modules
-server/package-lock.json
