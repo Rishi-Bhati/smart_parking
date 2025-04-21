@@ -12,7 +12,8 @@ const db = new sqlite3.Database(DBSOURCE, (err) => {
       `CREATE TABLE IF NOT EXISTS vehicles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         plate TEXT UNIQUE,
-        type TEXT
+        type TEXT,
+        email TEXT
       )`
     );
 

@@ -1,12 +1,42 @@
 import express from "express";
 import cors from "cors";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 import db from "./db.js";
+
+dotenv.config();
 
 const app = express();
 const port = 5000;
 
 app.use(cors());
 app.use(express.json());
+
+// Email configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+// Helper function to send email
+const sendEmail = async (to, subject, text) => {
+  const mailOptions = {
+    from: 'your-email@gmail.com',
+    to,
+    subject,
+    text
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+};
 
 // Fixed hourly rates per vehicle type
 const RATE_MAPPING = {
@@ -50,19 +80,19 @@ const calculateFee = (hours, vehicleType) => {
   return Math.ceil(hours) * rate;
 };
 
-// Endpoint: Check in a vehicle (requires plate and type)
+// Endpoint: Check in a vehicle (requires plate, type, and email)
 app.post("/api/checkin", (req, res) => {
-  const { plate, type } = req.body;
-  if (!plate || !type) {
-    return res.status(400).json({ error: "Plate and type are required" });
+  const { plate, type, email } = req.body;
+  if (!plate || !type || !email) {
+    return res.status(400).json({ error: "Plate, type, and email are required" });
   }
-  // Insert vehicle if not exists; update type if vehicle already exists
+  // Insert vehicle if not exists; update type and email if vehicle already exists
   db.run(
-    `INSERT OR IGNORE INTO vehicles (plate, type) VALUES (?, ?)`,
-    [plate, type],
+    `INSERT OR IGNORE INTO vehicles (plate, type, email) VALUES (?, ?, ?)`,
+    [plate, type, email],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
-      db.run(`UPDATE vehicles SET type = ? WHERE plate = ?`, [type, plate]);
+      db.run(`UPDATE vehicles SET type = ?, email = ? WHERE plate = ?`, [type, email, plate]);
       // Retrieve vehicle id
       db.get(`SELECT id FROM vehicles WHERE plate = ?`, [plate], (err, row) => {
         if (err || !row) {
@@ -184,22 +214,40 @@ app.listen(port, () => {
 
 // ...existing code...
 
-// Add violation to a vehicle
+// Add violation to a vehicle and send email
 app.post("/api/violations", async (req, res) => {
   const { vehicle_id, violation_type, fine_amount, description } = req.body;
 
-  db.run(
-    `INSERT INTO violations (vehicle_id, violation_type, fine_amount, description)
-     VALUES (?, ?, ?, ?)`,
-    [vehicle_id, violation_type, fine_amount, description],
-    function (err) {
-      if (err) {
-        res.status(400).json({ error: err.message });
-        return;
-      }
-      res.json({ id: this.lastID });
+  db.get(`SELECT email FROM vehicles WHERE id = ?`, [vehicle_id], async (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
     }
-  );
+    if (!row) {
+      return res.status(400).json({ error: "Vehicle not found" });
+    }
+
+    const { email } = row;
+
+    db.run(
+      `INSERT INTO violations (vehicle_id, violation_type, fine_amount, description)
+       VALUES (?, ?, ?, ?)`,
+      [vehicle_id, violation_type, fine_amount, description],
+      async function (err) {
+        if (err) {
+          res.status(400).json({ error: err.message });
+          return;
+        }
+
+        // Send email notification
+        const emailSubject = "Parking Violation Notice";
+        const emailText = `Dear vehicle owner,\n\nA parking violation has been recorded for your vehicle.\n\nViolation Type: ${violation_type}\nFine Amount: $${fine_amount}\nDescription: ${description}\n\nPlease address this violation as soon as possible.\n\nThank you,\nSmart Parking System`;
+
+        await sendEmail(email, emailSubject, emailText);
+
+        res.json({ id: this.lastID });
+      }
+    );
+  });
 });
 
 // Get violations for a vehicle

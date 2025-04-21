@@ -27,3 +27,6 @@ package-lock.json
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables
+.env

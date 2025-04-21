@@ -9,6 +9,7 @@ function App() {
   const [page, setPage] = useState("home");
   const [plate, setPlate] = useState("");
   const [type, setType] = useState("Car");
+  const [email, setEmail] = useState("");
   const [parked, setParked] = useState([]);
   const [history, setHistory] = useState([]);
   const [message, setMessage] = useState("");
@@ -52,11 +53,11 @@ function App() {
   }, [page]);
 
   const handleCheckin = async () => {
-    if (!plate.trim() || !type.trim()) return;
+    if (!plate.trim() || !type.trim() || !email.trim()) return;
     const res = await fetch(`${backendUrl}/api/checkin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plate, type }),
+      body: JSON.stringify({ plate, type, email }),
     });
     const data = await res.json();
     setMessage(data.message || data.error);
@@ -264,6 +265,13 @@ function App() {
                 <option value="Bike">Bike</option>
                 <option value="Truck">Truck</option>
               </select>
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input"
+              />
               <button className="button primary" onClick={handleCheckin}>
                 Check In
               </button>
